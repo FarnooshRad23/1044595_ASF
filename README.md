@@ -7,4 +7,4 @@ the sudden loss of processing nodes—Aegis guarantees continuity of intelligenc
 redundancy, automatic failover, and duplicate-safe persistence.
 The result is a real-time, reliable threat detection system capable of identifying earthquakes,
 conventional explosions, and nuclear-like events, visualized through a live operational
-dashboa
+dashboard

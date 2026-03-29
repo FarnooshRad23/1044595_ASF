@@ -1,0 +1,16 @@
+  Package structure:
+
+  src/main/java/com/sismaguard/broker/
+  ├── BrokerApplication.java              ← @SpringBootApplication
+  ├── config/
+  │   └── WebSocketConfig.java            ← registers /stream endpoint
+  ├── dto/
+  │   ├── SensorSummary.java              ← record from simulator
+  │   ├── SensorMeasurement.java          ← record from simulator
+  │   ├── Coordinates.java                ← nested record
+  │   └── BrokerMessage.java             ← our enriched DTO
+  ├── service/
+  │   ├── SensorDiscoveryService.java     ← GET /api/devices/ at startup
+  │   └── SimulatorConnectionService.java ← opens 12 WS to simulator
+  └── handler/
+  └── ReplicaWebSocketHandler.java    ← accepts replicas, broadcasts
