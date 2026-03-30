@@ -6,5 +6,7 @@ server:
   port: 8082
 
 simulator:
-  # Overridden in Docker via SIMULATOR_URL env var; default works for local dev
   url: ${SIMULATOR_URL:http://localhost:8080}
+
+broker:
+  url: ${BROKER_URL:ws://localhost:8081}

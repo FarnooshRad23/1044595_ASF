@@ -1,7 +1,6 @@
 package com.advprog.processing.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 
 /**
  * Mirrors the JSON object returned by GET /api/devices/ on the simulator.
@@ -12,7 +11,7 @@ public record SensorSummary(
         String name,
         String category,
         String region,
-        List<Double> coordinates,
+        Coordinates coordinates,
         @JsonProperty("measurement_unit") String measurementUnit,
         @JsonProperty("sampling_rate_hz")  double samplingRateHz,
         @JsonProperty("websocket_url")     String websocketUrl

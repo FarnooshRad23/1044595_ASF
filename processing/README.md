@@ -92,6 +92,7 @@ When the buffer drains, it returns: the double[128] for FFT, and the two timesta
  curl http://localhost:8080/api/devices/ | jq
  ```
 2. BrokerClientService + SlidingWindowService — receive from broker, fill buffers. Test: log "window full for sensor-03" every ~6.4 seconds.
+
 3. FftAnalysisService — pure math. Test: feed it a synthetic sine wave at 2 Hz, verify it returns ~2 Hz.
 4. ClassificationService — frequency band rules. Test: unit test with known frequencies (1.5 → earthquake, 5.0 → explosion, 9.0 → nuclear, 0.3 → null).
 5. EventPersistenceService — database writes. Test: inject an earthquake via simulator admin API, verify row appears in PostgreSQL.

@@ -6,4 +6,4 @@ server:
   port: 8081
 
 simulator:
-  base-url: http://localhost:8080   # TODO: override with SIMULATOR_BASE_URL in Docker Compose
+  base-url: ${SIMULATOR_BASE_URL:http://localhost:8080}
