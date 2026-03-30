@@ -1,0 +1,73 @@
+<style>
+table{width:100%;border-collapse:collapse;font-size:13px;font-family:var(--font-sans);color:var(--color-text-primary)}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--color-border-primary);font-weight:500;color:var(--color-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:0.5px}
+td{padding:10px 12px;border-bottom:1px solid var(--color-border-tertiary);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.hop{display:inline-block;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;font-weight:500;font-size:11px;margin-right:6px}
+.hop-sim{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.hop-own{background:#EEEDFE;color:#534AB7}
+.hop-db{background:#E6F1FB;color:#185FA5}
+.hop-api{background:#FAEEDA;color:#854F0B}
+.proto{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.proto-ws{background:#E1F5EE;color:#085041}
+.proto-sse{background:#FCEBEB;color:#791F1F}
+.proto-http{background:#FAEEDA;color:#633806}
+.proto-jdbc{background:#E6F1FB;color:#0C447C}
+code{font-family:var(--font-mono);font-size:12px;background:var(--color-background-secondary);padding:1px 5px;border-radius:4px}
+.key{font-weight:500}
+.note{color:var(--color-text-tertiary);font-size:12px;font-style:italic}
+</style>
+<table>
+<tr>
+<th>Hop</th>
+<th>From → To</th>
+<th>Protocol</th>
+<th>DTO</th>
+<th>Fields</th>
+</tr>
+<tr>
+<td><span class="hop hop-sim">1</span></td>
+<td>Simulator → Broker</td>
+<td><span class="proto proto-http">HTTP GET</span></td>
+<td><code>SensorSummary[]</code></td>
+<td><span class="key">id</span>, name, category, region, coordinates, sampling_rate_hz, websocket_url</td>
+</tr>
+<tr>
+<td><span class="hop hop-sim">2</span></td>
+<td>Simulator → Broker</td>
+<td><span class="proto proto-ws">WebSocket</span></td>
+<td><code>SensorMeasurement</code></td>
+<td><span class="key">timestamp</span>, value <span class="note">— no sensorId (implicit from WS path)</span></td>
+</tr>
+<tr>
+<td><span class="hop hop-own">3</span></td>
+<td>Broker → Replica</td>
+<td><span class="proto proto-ws">WebSocket</span></td>
+<td><code>BrokerMessage</code></td>
+<td><span class="key">sensorId</span>, timestamp, value <span class="note">— our DTO, adds sensorId</span></td>
+</tr>
+<tr>
+<td><span class="hop hop-sim">4</span></td>
+<td>Simulator → Replica</td>
+<td><span class="proto proto-sse">SSE</span></td>
+<td><code>ShutdownCommand</code></td>
+<td>command: <code>"SHUTDOWN"</code> <span class="note">— kills exactly one replica</span></td>
+</tr>
+<tr>
+<td><span class="hop hop-db">5</span></td>
+<td>Replica → PostgreSQL</td>
+<td><span class="proto proto-jdbc">JDBC</span></td>
+<td><code>DetectedEvent</code></td>
+<td><span class="key">sensor_id</span>, event_type, dominant_freq_hz, magnitude, <span class="key">window_start</span>, window_end, region, replica_id</td>
+</tr>
+<tr>
+<td><span class="hop hop-api">6</span></td>
+<td>Replica → Dashboard</td>
+<td><span class="proto proto-http">REST / WS</span></td>
+<td><code>EventResponse</code></td>
+<td>id, sensorId, sensorName, eventType, dominantFreqHz, magnitude, detectedAt, region, category</td>
+</tr>
+</table>
+<div style="margin-top:12px;padding:10px 14px;border-left:3px solid var(--color-border-info);font-size:13px;color:var(--color-text-secondary)">
+<span style="font-weight:500;color:var(--color-text-info)">Dedup key:</span> The unique constraint <code>(sensor_id, event_type, window_start)</code> on the database ensures that when all 3 replicas detect the same earthquake from the same sensor in the same time window, only one row is stored.
+</div>
