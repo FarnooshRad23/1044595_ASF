@@ -1,9 +1,7 @@
 package com.advprog.processing.service;
 
-import com.advprog.processing.dto.BrokerMessage;
-import com.advprog.processing.dto.SensorSummary;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,13 +12,18 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.net.URI;
+import com.advprog.processing.dto.BrokerMessage;
+import com.advprog.processing.dto.SensorSummary;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class BrokerClientService {
 
     private static final Logger log = LoggerFactory.getLogger(BrokerClientService.class);
-
+    
+    private final ClassificationService classificationService;
     private final SlidingWindowService slidingWindowService;
     private final SensorCacheService sensorCacheService;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -28,8 +31,9 @@ public class BrokerClientService {
     @Value("${broker.url}")
     private String brokerUrl;
 
-    public BrokerClientService(SlidingWindowService slidingWindowService,
+    public BrokerClientService(ClassificationService classificationService,SlidingWindowService slidingWindowService,
                                 SensorCacheService sensorCacheService) {
+        this.classificationService=classificationService;                             
         this.slidingWindowService = slidingWindowService;
         this.sensorCacheService = sensorCacheService;
     }
@@ -54,6 +58,7 @@ public class BrokerClientService {
                                 log.info("Window full for {} [{}] — windowStart={} windowEnd={}",
                                         result.sensorId(), sensorName,
                                         result.windowStart(), result.windowEnd());
+                                        classificationService.analyze(result);
                             });
                 } catch (Exception e) {
                     log.warn("Failed to process broker message: {}", e.getMessage());
