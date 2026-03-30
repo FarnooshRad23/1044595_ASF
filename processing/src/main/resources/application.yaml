@@ -1,3 +1,10 @@
 spring:
   application:
     name: processing
+
+server:
+  port: 8082
+
+simulator:
+  # Overridden in Docker via SIMULATOR_URL env var; default works for local dev
+  url: ${SIMULATOR_URL:http://localhost:8080}
