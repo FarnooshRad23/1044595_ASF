@@ -99,3 +99,40 @@ When the buffer drains, it returns: the double[128] for FFT, and the two timesta
 6. ControlStreamService — SSE listener + shutdown. Test: trigger POST /api/admin/shutdown, verify the replica process dies and Docker restarts it.
 
 Then add the API layer (EventController, HealthController, DashboardPushService) last
+
+---
+# ShoutDown demo
+
+Step-by-step demo (once docker compose up is running)
+```bash
+Step 1 — Confirm both replicas are alive
+docker ps --format "table {{.Names}}\t{{.Status}}"
+# Expected: processing-1 and processing-2 both "Up"
+
+Step 2 — Watch the SSE control stream in real time (optional, shows the protocol raw)
+curl -N http://localhost:8080/api/control
+# You'll see periodic heartbeat events:
+# event: heartbeat
+# data: {"timestamp":"...","controlStreamConnections":2}
+The controlStreamConnections: 2 confirms both replicas are subscribed.
+
+Step 3 — Trigger the shutdown (in a second terminal)
+curl -s -X POST http://localhost:8080/api/admin/shutdown | jq .
+The response tells you which replica received the command and also which datacenter sensor was injected with a datacenter_shutdown_disturbance event (a bonus signal for the dashboard).
+
+Step 4 — Watch the replica exit
+docker ps --format "table {{.Names}}\t{{.Status}}"
+# One of the two replicas will show "Restarting" or a recent "Up N seconds ago"
+
+Or follow its logs live:
+docker logs -f processing-1
+# You'll see: "ControlStreamService: SHUTDOWN received — exiting with code 1"
+# then Spring context shutdown messages
+
+Step 5 — Confirm automatic restart
+Because docker-compose.yml sets restart: on-failure, Docker restarts the exited replica within a few seconds. Run docker ps again — both replicas will be "Up".
+
+Step 6 — Confirm the surviving replica never stopped
+docker logs processing-2
+# Continuous BrokerClientService activity — no gap during processing-1's restart
+```
