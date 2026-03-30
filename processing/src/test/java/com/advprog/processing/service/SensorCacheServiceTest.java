@@ -62,7 +62,8 @@ class SensorCacheServiceTest {
         assertThat(sensor05.samplingRateHz()).isEqualTo(50.0);
         assertThat(sensor05.websocketUrl()).isEqualTo("/ws/sensor-05");
         assertThat(sensor05.measurementUnit()).isEqualTo("m/s²");
-        assertThat(sensor05.coordinates()).containsExactly(43.1, 13.7);
+        assertThat(sensor05.coordinates().latitude()).isEqualTo(43.1);
+        assertThat(sensor05.coordinates().longitude()).isEqualTo(13.7);
 
         mockServer.verify();
     }

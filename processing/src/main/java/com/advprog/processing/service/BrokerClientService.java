@@ -52,13 +52,15 @@ public class BrokerClientService {
                             message.getPayload(), BrokerMessage.class);
                     slidingWindowService.addSample(msg.sensorId(), msg.value(), msg.timestamp())
                             .ifPresent(result -> {
-                                String sensorName = sensorCacheService.get(result.sensorId())
-                                        .map(SensorSummary::name)
-                                        .orElse("unknown");
+                                SensorSummary sensor = sensorCacheService.get(result.sensorId())
+                                        .orElse(null);
+                                String sensorName = sensor != null ? sensor.name() : "unknown";
+                                double samplingRateHz = sensor != null ? sensor.samplingRateHz() : 100.0;
                                 log.info("Window full for {} [{}] — windowStart={} windowEnd={}",
                                         result.sensorId(), sensorName,
                                         result.windowStart(), result.windowEnd());
-                                        classificationService.analyze(result);
+                                String eventType = classificationService.classify(result, samplingRateHz);
+                                if (eventType == null) return; // noise — discard
                             });
                 } catch (Exception e) {
                     log.warn("Failed to process broker message: {}", e.getMessage());
