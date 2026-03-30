@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: processing
+
+server:
+  port: 8082
+
+simulator:
+  url: ${SIMULATOR_URL:http://localhost:8080}
+
+broker:
+  url: ${BROKER_URL:ws://localhost:8081}
