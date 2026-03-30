@@ -39,6 +39,10 @@ public record Coordinates(double latitude, double longitude) {}
 **How to test it:** Run the broker app, check the logs. You should see:
 ```
 Discovered 12 sensors: [sensor-01, sensor-02, ..., sensor-12]
+
+and
+
+INFO:     192.168.65.1:46813 - "GET /api/devices/ HTTP/1.1" 200 OK
 ```
 
 ---
