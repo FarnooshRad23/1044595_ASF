@@ -2,7 +2,7 @@ spring:
   application:
     name: processing
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aegis}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/aegis}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
   sql:
@@ -16,7 +16,7 @@ server:
   port: 8082
 
 simulator:
-  url: ${SIMULATOR_URL:http://localhost:8080}
+  url: ${SIMULATOR_URL:http://simulator:8080}
 
 broker:
-  url: ${BROKER_URL:ws://localhost:8081}
+  url: ${BROKER_URL:ws://broker:8081}

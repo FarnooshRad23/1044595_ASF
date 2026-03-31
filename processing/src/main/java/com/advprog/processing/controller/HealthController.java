@@ -30,7 +30,7 @@ public class HealthController {
         this.replicaId = replicaId;
     }
 
-    @GetMapping("/health")
+    @GetMapping("/api/health")
     public HealthResponse health() {
         boolean broker = brokerClientService.isBrokerConnected();
         boolean control = controlStreamService.isControlConnected();
