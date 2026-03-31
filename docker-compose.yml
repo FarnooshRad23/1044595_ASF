@@ -6,8 +6,8 @@ services:
     environment:
       SAMPLING_RATE_HZ: "20"
       AUTO_SHUTDOWN_ENABLED: "true"
-      AUTO_SHUTDOWN_MIN_SECONDS: "30"
-      AUTO_SHUTDOWN_MAX_SECONDS: "90"
+      AUTO_SHUTDOWN_MIN_SECONDS: "120"
+      AUTO_SHUTDOWN_MAX_SECONDS: "180"
 
   postgres:
     image: postgres:16-alpine
@@ -43,6 +43,7 @@ services:
 
   processing-1:
     build: ./processing
+    restart: on-failure
     environment:
       SIMULATOR_URL: http://simulator:8080
       BROKER_URL: ws://broker:8081
@@ -58,6 +59,7 @@ services:
 
   processing-2:
     build: ./processing
+    restart: on-failure
     environment:
       SIMULATOR_URL: http://simulator:8080
       BROKER_URL: ws://broker:8081
@@ -73,6 +75,7 @@ services:
 
   processing-3:
     build: ./processing
+    restart: on-failure
     environment:
       SIMULATOR_URL: http://simulator:8080
       BROKER_URL: ws://broker:8081
