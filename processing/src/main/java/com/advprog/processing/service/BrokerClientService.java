@@ -1,9 +1,7 @@
 package com.advprog.processing.service;
 
-import com.advprog.processing.dto.BrokerMessage;
-import com.advprog.processing.dto.SensorSummary;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +13,11 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.net.URI;
+import com.advprog.processing.dto.BrokerMessage;
+import com.advprog.processing.dto.SensorSummary;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class BrokerClientService {
