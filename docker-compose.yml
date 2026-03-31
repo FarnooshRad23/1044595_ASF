@@ -1,0 +1,97 @@
+services:
+  simulator:
+    image: seismic-signal-simulator:multiarch_v1
+    ports:
+      - "8080:8080"
+    environment:
+      AUTO_SHUTDOWN_ENABLED: "false"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aegis
+      POSTGRES_USER: aegis
+      POSTGRES_PASSWORD: aegis
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis -d aegis"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  broker:
+    build: ./broker
+    ports:
+      - "8081:8081"
+    environment:
+      SIMULATOR_BASE_URL: http://simulator:8080
+    depends_on:
+      - simulator
+
+  processing-1:
+    build: ./processing
+    environment:
+      SIMULATOR_URL: http://simulator:8080
+      BROKER_URL: ws://broker:8081
+      REPLICA_ID: replica-1
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aegis
+      SPRING_DATASOURCE_USERNAME: aegis
+      SPRING_DATASOURCE_PASSWORD: aegis
+    depends_on:
+      broker:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  processing-2:
+    build: ./processing
+    environment:
+      SIMULATOR_URL: http://simulator:8080
+      BROKER_URL: ws://broker:8081
+      REPLICA_ID: replica-2
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aegis
+      SPRING_DATASOURCE_USERNAME: aegis
+      SPRING_DATASOURCE_PASSWORD: aegis
+    depends_on:
+      broker:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  processing-3:
+    build: ./processing
+    environment:
+      SIMULATOR_URL: http://simulator:8080
+      BROKER_URL: ws://broker:8081
+      REPLICA_ID: replica-3
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aegis
+      SPRING_DATASOURCE_USERNAME: aegis
+      SPRING_DATASOURCE_PASSWORD: aegis
+    depends_on:
+      broker:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  dashboard:
+    build: ./dashboard
+    depends_on:
+      - nginx
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - processing-1
+      - processing-2
+      - processing-3
+
+volumes:
+  postgres_data:
