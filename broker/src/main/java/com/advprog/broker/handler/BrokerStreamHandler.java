@@ -32,10 +32,13 @@ public class BrokerStreamHandler extends TextWebSocketHandler {
     }
 
     public void broadcast(String json) {
+        TextMessage msg = new TextMessage(json);
         for (WebSocketSession session : sessions) {
             try {
                 if (session.isOpen()) {
-                    session.sendMessage(new TextMessage(json));
+                    synchronized (session) {
+                        session.sendMessage(msg);
+                    }
                 }
             } catch (IOException e) {
                 log.warn("Removing dead replica session {}: {}", session.getId(), e.getMessage());

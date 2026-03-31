@@ -1,6 +1,5 @@
 package com.advprog.processing.service;
 
-import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
@@ -9,32 +8,29 @@ import org.springframework.stereotype.Service;
 @Service
 public class FftAnalysisService {
 
-    private final FastFourierTransformer fft =
-        new FastFourierTransformer(DftNormalization.STANDARD);
+    public record FftResult(double dominantFreqHz, double magnitude) {}
 
-    /**
-     * Runs FFT on the 128-sample window and returns the dominant frequency in Hz.
-     * Bin 0 (DC component) is always skipped.
-     *
-     * @param samples        128 double values from the sliding window
-     * @param samplingRateHz sensor's sampling rate (from SensorSummary)
-     * @return dominant frequency in Hz
-     */
-    public double dominantFrequencyHz(double[] samples, double samplingRateHz) {
-        Complex[] spectrum = fft.transform(samples, TransformType.FORWARD);
+    private static final FastFourierTransformer TRANSFORMER =
+            new FastFourierTransformer(DftNormalization.STANDARD);
 
-        int dominantBin = 1; // skip bin 0 (DC)
-        double maxMagnitude = 0.0;
-        int halfLen = spectrum.length / 2; // only positive frequencies
+    public FftResult analyze(double[] samples, double samplingRateHz) {
+        var complex = TRANSFORMER.transform(samples, TransformType.FORWARD);
 
-        for (int k = 1; k < halfLen; k++) {
-            double mag = spectrum[k].abs();
-            if (mag > maxMagnitude) {
-                maxMagnitude = mag;
-                dominantBin = k;
+        int bestBin = 1;
+        double bestMag = 0.0;
+        int nyquist = complex.length / 2;
+
+        for (int i = 1; i <= nyquist; i++) {
+            double re = complex[i].getReal();
+            double im = complex[i].getImaginary();
+            double mag = Math.sqrt(re * re + im * im);
+            if (mag > bestMag) {
+                bestMag = mag;
+                bestBin = i;
             }
         }
 
-        return (double) dominantBin * samplingRateHz / samples.length;
+        double dominantFreqHz = (double) bestBin * samplingRateHz / samples.length;
+        return new FftResult(dominantFreqHz, bestMag);
     }
 }

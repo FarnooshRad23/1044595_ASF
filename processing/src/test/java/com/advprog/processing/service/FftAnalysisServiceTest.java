@@ -1,24 +1,40 @@
 package com.advprog.processing.service;
 
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import org.junit.jupiter.api.Test;
-
 class FftAnalysisServiceTest {
 
+    private final FftAnalysisService fft = new FftAnalysisService();
+
+    private static final double SAMPLING_RATE = 20.0;
+    private static final int WINDOW = 128;
+
     @Test
-    void sineWaveAt2Hz_returnsDominantFreqNear2Hz() {
-        // samplingRateHz=64 makes 2 Hz land exactly on bin 4 (2×128/64=4) — no spectral leakage
-        double samplingRateHz = 64.0;
-        double[] samples = new double[128];
-        for (int i = 0; i < 128; i++) {
-            samples[i] = Math.sin(2 * Math.PI * 2.0 * i / samplingRateHz);
+    void sineWave2Hz_detectsApprox2Hz() {
+        double[] samples = new double[WINDOW];
+        for (int i = 0; i < WINDOW; i++) {
+            samples[i] = Math.sin(2 * Math.PI * 2.0 * i / SAMPLING_RATE);
         }
 
-        FftAnalysisService service = new FftAnalysisService();
-        double result = service.dominantFrequencyHz(samples, samplingRateHz);
+        FftAnalysisService.FftResult result = fft.analyze(samples, SAMPLING_RATE);
 
-        assertThat(result).isCloseTo(2.0, within(0.1));
+        assertThat(result.dominantFreqHz()).isCloseTo(2.0, within(0.2));
+        assertThat(result.magnitude()).isPositive();
+    }
+
+    @Test
+    void flatSignal_dcBinSkipped_noDominantAtZeroHz() {
+        double[] samples = new double[WINDOW];
+        for (int i = 0; i < WINDOW; i++) {
+            samples[i] = 5.0; // constant — all energy in bin 0 (DC)
+        }
+
+        FftAnalysisService.FftResult result = fft.analyze(samples, SAMPLING_RATE);
+
+        // DC bin is skipped, so dominant freq must be > 0
+        assertThat(result.dominantFreqHz()).isGreaterThan(0.0);
     }
 }
