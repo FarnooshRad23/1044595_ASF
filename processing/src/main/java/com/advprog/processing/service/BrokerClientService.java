@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
@@ -20,6 +21,8 @@ import java.net.URI;
 public class BrokerClientService {
 
     private static final Logger log = LoggerFactory.getLogger(BrokerClientService.class);
+
+    private volatile boolean brokerConnected = false;
 
     private final SlidingWindowService slidingWindowService;
     private final SensorCacheService sensorCacheService;
@@ -42,6 +45,18 @@ public class BrokerClientService {
         StandardWebSocketClient client = new StandardWebSocketClient();
         client.execute(new TextWebSocketHandler() {
             @Override
+            public void afterConnectionEstablished(WebSocketSession session) {
+                brokerConnected = true;
+                log.info("Broker WS connection established");
+            }
+
+            @Override
+            public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+                brokerConnected = false;
+                log.warn("Broker WS connection closed: {}", status);
+            }
+
+            @Override
             protected void handleTextMessage(WebSocketSession session, TextMessage message) {
                 try {
                     BrokerMessage msg = objectMapper.readValue(
@@ -60,11 +75,8 @@ public class BrokerClientService {
                 }
             }
 
-            @Override
-            public void afterConnectionClosed(WebSocketSession session,
-                    org.springframework.web.socket.CloseStatus status) {
-                log.warn("Broker WS connection closed: {}", status);
-            }
         }, new WebSocketHttpHeaders(), URI.create(url));
     }
+
+    public boolean isBrokerConnected() { return brokerConnected; }
 }
