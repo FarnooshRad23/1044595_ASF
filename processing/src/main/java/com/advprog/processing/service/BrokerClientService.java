@@ -81,8 +81,7 @@ public class BrokerClientService {
 
                                 FftAnalysisService.FftResult fft =
                                         fftAnalysisService.analyze(result.samples(), SAMPLING_RATE_HZ);
-                                log.info("dominand freq: {}",
-                                        fft.dominantFreqHz());
+
                                 log.info("Window complete: sensor={} [{}] region={} - dominand freq: {}",
                                         result.sensorId(), sensorName,
                                         sensor0 != null ? sensor0.region() : "unknown",
