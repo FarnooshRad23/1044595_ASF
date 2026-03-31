@@ -22,20 +22,26 @@ import jakarta.annotation.PostConstruct;
 public class BrokerClientService {
 
     private static final Logger log = LoggerFactory.getLogger(BrokerClientService.class);
-    
+
     private final ClassificationService classificationService;
+    private final FftAnalysisService fftAnalysisService;
     private final SlidingWindowService slidingWindowService;
     private final SensorCacheService sensorCacheService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private final EventPersistenceService persistenceService;
     @Value("${broker.url}")
     private String brokerUrl;
 
-    public BrokerClientService(ClassificationService classificationService,SlidingWindowService slidingWindowService,
-                                SensorCacheService sensorCacheService) {
-        this.classificationService=classificationService;                             
+    public BrokerClientService(ClassificationService classificationService,
+                               FftAnalysisService fftAnalysisService,
+                               SlidingWindowService slidingWindowService,
+                               SensorCacheService sensorCacheService, 
+                               EventPersistenceService persistenceService) {
+        this.classificationService = classificationService;
+        this.fftAnalysisService = fftAnalysisService;
         this.slidingWindowService = slidingWindowService;
         this.sensorCacheService = sensorCacheService;
+        this.persistenceService=persistenceService;
     }
 
     @PostConstruct
@@ -50,16 +56,37 @@ public class BrokerClientService {
                 try {
                     BrokerMessage msg = objectMapper.readValue(
                             message.getPayload(), BrokerMessage.class);
+
                     slidingWindowService.addSample(msg.sensorId(), msg.value(), msg.timestamp())
                             .ifPresent(result -> {
-                                String sensorName = sensorCacheService.get(result.sensorId())
-                                        .map(SensorSummary::name)
-                                        .orElse("unknown");
+                                SensorSummary sensor = sensorCacheService.get(result.sensorId())
+                                        .orElse(null);
+
+                                String sensorName = sensor != null ? sensor.name() : "unknown";
+                                double samplingRateHz = sensor != null ? sensor.samplingRateHz() : 100.0;
+
                                 log.info("Window full for {} [{}] — windowStart={} windowEnd={}",
                                         result.sensorId(), sensorName,
                                         result.windowStart(), result.windowEnd());
-                                        classificationService.analyze(result);
+
+                                FftAnalysisService.FftResult fftResult =
+                                        fftAnalysisService.analyze(result.samples(), samplingRateHz);
+
+                                String classification =
+                                        classificationService.classify(result.sensorId(), fftResult);
+
+                                if (classification == null) return;
+
+                                log.info("Event type:{} (freq={} Hz, magnitude={})",
+                                       
+                                        classification,
+                                        fftResult.dominantFrequencyHz(),
+                                        fftResult.magnitude());
+                            persistenceService.save(result.sensorId(), sensor, classification,  fftResult.dominantFrequencyHz(),   fftResult.magnitude(),
+                             result.windowStart(), result.windowEnd());
+                                       
                             });
+                           
                 } catch (Exception e) {
                     log.warn("Failed to process broker message: {}", e.getMessage());
                 }
