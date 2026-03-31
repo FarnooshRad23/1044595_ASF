@@ -3,11 +3,14 @@ spring:
     name: processing
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aegis}
-    username: ${SPRING_DATASOURCE_USERNAME:aegis}
-    password: ${SPRING_DATASOURCE_PASSWORD:aegis}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  sql:
+    init:
+      mode: always
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
 
 server:
   port: 8082

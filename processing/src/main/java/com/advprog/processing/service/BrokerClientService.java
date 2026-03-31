@@ -24,17 +24,28 @@ public class BrokerClientService {
 
     private volatile boolean brokerConnected = false;
 
+    private static final double SAMPLING_RATE_HZ = 20.0;
+
     private final SlidingWindowService slidingWindowService;
     private final SensorCacheService sensorCacheService;
+    private final FftAnalysisService fftAnalysisService;
+    private final ClassificationService classificationService;
+    private final EventPersistenceService eventPersistenceService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${broker.url}")
     private String brokerUrl;
 
     public BrokerClientService(SlidingWindowService slidingWindowService,
-                                SensorCacheService sensorCacheService) {
+                                SensorCacheService sensorCacheService,
+                                FftAnalysisService fftAnalysisService,
+                                ClassificationService classificationService,
+                                EventPersistenceService eventPersistenceService) {
         this.slidingWindowService = slidingWindowService;
         this.sensorCacheService = sensorCacheService;
+        this.fftAnalysisService = fftAnalysisService;
+        this.classificationService = classificationService;
+        this.eventPersistenceService = eventPersistenceService;
     }
 
     @PostConstruct
@@ -63,12 +74,41 @@ public class BrokerClientService {
                             message.getPayload(), BrokerMessage.class);
                     slidingWindowService.addSample(msg.sensorId(), msg.value(), msg.timestamp())
                             .ifPresent(result -> {
-                                String sensorName = sensorCacheService.get(result.sensorId())
-                                        .map(SensorSummary::name)
-                                        .orElse("unknown");
-                                log.info("Window full for {} [{}] — windowStart={} windowEnd={}",
+                                // window is full, ready for analysis
+
+                                SensorSummary sensor0 = sensorCacheService.get(result.sensorId()).orElse(null);
+                                String sensorName = sensor0 != null ? sensor0.name() : "unknown";
+
+                                FftAnalysisService.FftResult fft =
+                                        fftAnalysisService.analyze(result.samples(), SAMPLING_RATE_HZ);
+                                log.info("dominand freq: {}",
+                                        fft.dominantFreqHz());
+                                log.info("Window complete: sensor={} [{}] region={} - dominand freq: {}",
                                         result.sensorId(), sensorName,
-                                        result.windowStart(), result.windowEnd());
+                                        sensor0 != null ? sensor0.region() : "unknown",
+                                        fft.dominantFreqHz());
+                                classificationService.classify(fft.dominantFreqHz())
+                                        .ifPresentOrElse(
+                                                eventType -> {
+                                                    SensorSummary sensor = sensor0;
+                                                    log.info("EVENT DETECTED: sensor={} [{}] type={} freq={}Hz mag={}",
+                                                            result.sensorId(), sensorName,
+                                                            eventType, fft.dominantFreqHz(), fft.magnitude());
+                                                    eventPersistenceService.persist(
+                                                            result.sensorId(),
+                                                            sensor != null ? sensor.name()     : "unknown",
+                                                            eventType,
+                                                            fft.dominantFreqHz(),
+                                                            fft.magnitude(),
+                                                            result.windowStart(),
+                                                            result.windowEnd(),
+                                                            sensor != null ? sensor.region()   : null,
+                                                            sensor != null ? sensor.category() : null
+                                                    );
+                                                },
+                                                () -> log.debug("Noise discarded: sensor={} freq={}Hz",
+                                                        result.sensorId(), fft.dominantFreqHz())
+                                        );
                             });
                 } catch (Exception e) {
                     log.warn("Failed to process broker message: {}", e.getMessage());

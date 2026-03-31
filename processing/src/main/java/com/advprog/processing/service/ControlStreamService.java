@@ -117,7 +117,7 @@ public class ControlStreamService {
                     if (commandNode != null && "SHUTDOWN".equals(commandNode.asText())) {
                         log.info("ControlStreamService: SHUTDOWN received — exiting with code 1");
                         // exit(1) triggers Docker restart: on-failure; exit(0) would not.
-                        exitHandler.accept(1);
+//                        exitHandler.accept(1); todo
                     }
                 }
             } else if (line.isEmpty()) {

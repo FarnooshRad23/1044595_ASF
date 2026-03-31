@@ -20,18 +20,18 @@ class SensorCacheServiceTest {
     /** 12-sensor JSON payload — mirrors what the real simulator returns. */
     private static final String TWELVE_SENSORS_JSON = """
             [
-              {"id":"sensor-01","name":"Alpha","category":"seismic","region":"North","coordinates":[41.9,12.5],"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-01"},
-              {"id":"sensor-02","name":"Beta","category":"seismic","region":"North","coordinates":[42.0,12.6],"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-02"},
-              {"id":"sensor-03","name":"Gamma","category":"seismic","region":"South","coordinates":[40.5,14.2],"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-03"},
-              {"id":"sensor-04","name":"Delta","category":"seismic","region":"South","coordinates":[40.6,14.3],"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-04"},
-              {"id":"sensor-05","name":"Epsilon","category":"seismic","region":"East","coordinates":[43.1,13.7],"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-05"},
-              {"id":"sensor-06","name":"Zeta","category":"seismic","region":"East","coordinates":[43.2,13.8],"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-06"},
-              {"id":"sensor-07","name":"Eta","category":"seismic","region":"West","coordinates":[41.0,11.0],"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-07"},
-              {"id":"sensor-08","name":"Theta","category":"seismic","region":"West","coordinates":[41.1,11.1],"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-08"},
-              {"id":"sensor-09","name":"Iota","category":"seismic","region":"Central","coordinates":[41.8,12.3],"measurement_unit":"m/s²","sampling_rate_hz":200.0,"websocket_url":"/ws/sensor-09"},
-              {"id":"sensor-10","name":"Kappa","category":"seismic","region":"Central","coordinates":[41.9,12.4],"measurement_unit":"m/s²","sampling_rate_hz":200.0,"websocket_url":"/ws/sensor-10"},
-              {"id":"sensor-11","name":"Lambda","category":"seismic","region":"North","coordinates":[42.1,12.7],"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-11"},
-              {"id":"sensor-12","name":"Mu","category":"seismic","region":"South","coordinates":[40.4,14.1],"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-12"}
+              {"id":"sensor-01","name":"Alpha","category":"seismic","region":"North","coordinates":{"latitude":41.9,"longitude":12.5},"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-01"},
+              {"id":"sensor-02","name":"Beta","category":"seismic","region":"North","coordinates":{"latitude":42.0,"longitude":12.6},"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-02"},
+              {"id":"sensor-03","name":"Gamma","category":"seismic","region":"South","coordinates":{"latitude":40.5,"longitude":14.2},"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-03"},
+              {"id":"sensor-04","name":"Delta","category":"seismic","region":"South","coordinates":{"latitude":40.6,"longitude":14.3},"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-04"},
+              {"id":"sensor-05","name":"Epsilon","category":"seismic","region":"East","coordinates":{"latitude":43.1,"longitude":13.7},"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-05"},
+              {"id":"sensor-06","name":"Zeta","category":"seismic","region":"East","coordinates":{"latitude":43.2,"longitude":13.8},"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-06"},
+              {"id":"sensor-07","name":"Eta","category":"seismic","region":"West","coordinates":{"latitude":41.0,"longitude":11.0},"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-07"},
+              {"id":"sensor-08","name":"Theta","category":"seismic","region":"West","coordinates":{"latitude":41.1,"longitude":11.1},"measurement_unit":"m/s²","sampling_rate_hz":50.0,"websocket_url":"/ws/sensor-08"},
+              {"id":"sensor-09","name":"Iota","category":"seismic","region":"Central","coordinates":{"latitude":41.8,"longitude":12.3},"measurement_unit":"m/s²","sampling_rate_hz":200.0,"websocket_url":"/ws/sensor-09"},
+              {"id":"sensor-10","name":"Kappa","category":"seismic","region":"Central","coordinates":{"latitude":41.9,"longitude":12.4},"measurement_unit":"m/s²","sampling_rate_hz":200.0,"websocket_url":"/ws/sensor-10"},
+              {"id":"sensor-11","name":"Lambda","category":"seismic","region":"North","coordinates":{"latitude":42.1,"longitude":12.7},"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-11"},
+              {"id":"sensor-12","name":"Mu","category":"seismic","region":"South","coordinates":{"latitude":40.4,"longitude":14.1},"measurement_unit":"m/s²","sampling_rate_hz":100.0,"websocket_url":"/ws/sensor-12"}
             ]
             """;
 
@@ -62,7 +62,8 @@ class SensorCacheServiceTest {
         assertThat(sensor05.samplingRateHz()).isEqualTo(50.0);
         assertThat(sensor05.websocketUrl()).isEqualTo("/ws/sensor-05");
         assertThat(sensor05.measurementUnit()).isEqualTo("m/s²");
-        assertThat(sensor05.coordinates()).containsExactly(43.1, 13.7);
+        assertThat(sensor05.coordinates().latitude()).isEqualTo(43.1);
+        assertThat(sensor05.coordinates().longitude()).isEqualTo(13.7);
 
         mockServer.verify();
     }
