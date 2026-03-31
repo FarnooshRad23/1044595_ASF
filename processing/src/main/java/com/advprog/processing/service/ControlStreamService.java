@@ -28,6 +28,7 @@ public class ControlStreamService {
     private final RestClient restClient;
     private final Consumer<Integer> exitHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final String simulatorUrl;
 
     private volatile boolean controlConnected = false;
 
@@ -43,6 +44,7 @@ public class ControlStreamService {
                          String simulatorUrl,
                          Consumer<Integer> exitHandler) {
         this.restClient = builder.baseUrl(simulatorUrl).build();
+        this.simulatorUrl = simulatorUrl;
         this.exitHandler = exitHandler;
     }
 
@@ -78,6 +80,7 @@ public class ControlStreamService {
      */
     void listenOnce() throws Exception {
         controlConnected = true;
+        log.info("ControlStreamService: connecting to SSE at {}/api/control", simulatorUrl);
         try {
             // exchange() gives direct InputStream access needed for line-by-line SSE parsing.
             // Checked exceptions from parseSseStream are wrapped and re-thrown after the call.
@@ -110,8 +113,12 @@ public class ControlStreamService {
                 // Record the event type for the next data line.
                 currentEvent = line.substring("event:".length()).trim();
             } else if (line.startsWith("data:")) {
-                if ("command".equals(currentEvent)) {
-                    String json = line.substring("data:".length()).trim();
+                String json = line.substring("data:".length()).trim();
+                if ("control-open".equals(currentEvent)) {
+                    log.info("ControlStreamService: SSE stream connected — {}", json);
+                } else if ("heartbeat".equals(currentEvent)) {
+                    log.debug("ControlStreamService: heartbeat — {}", json);
+                } else if ("command".equals(currentEvent)) {
                     JsonNode node = objectMapper.readTree(json);
                     JsonNode commandNode = node.get("command");
                     if (commandNode != null && "SHUTDOWN".equals(commandNode.asText())) {
