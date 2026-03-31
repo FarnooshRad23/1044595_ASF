@@ -29,6 +29,8 @@ public class ControlStreamService {
     private final Consumer<Integer> exitHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private volatile boolean controlConnected = false;
+
     /** Production constructor — exits the JVM via System.exit. */
     @Autowired
     public ControlStreamService(RestClient.Builder builder,
@@ -75,22 +77,29 @@ public class ControlStreamService {
      * Tests call this directly to avoid thread timing issues.
      */
     void listenOnce() throws Exception {
-        // exchange() gives direct InputStream access needed for line-by-line SSE parsing.
-        // Checked exceptions from parseSseStream are wrapped and re-thrown after the call.
-        Exception[] caught = {null};
-        restClient.get()
-                .uri("/api/control")
-                .exchange((request, response) -> {
-                    try (InputStream body = response.getBody();
-                         BufferedReader reader = new BufferedReader(new InputStreamReader(body))) {
-                        parseSseStream(reader);
-                    } catch (Exception e) {
-                        caught[0] = e;
-                    }
-                    return null;
-                });
-        if (caught[0] != null) throw caught[0];
+        controlConnected = true;
+        try {
+            // exchange() gives direct InputStream access needed for line-by-line SSE parsing.
+            // Checked exceptions from parseSseStream are wrapped and re-thrown after the call.
+            Exception[] caught = {null};
+            restClient.get()
+                    .uri("/api/control")
+                    .exchange((request, response) -> {
+                        try (InputStream body = response.getBody();
+                             BufferedReader reader = new BufferedReader(new InputStreamReader(body))) {
+                            parseSseStream(reader);
+                        } catch (Exception e) {
+                            caught[0] = e;
+                        }
+                        return null;
+                    });
+            if (caught[0] != null) throw caught[0];
+        } finally {
+            controlConnected = false;
+        }
     }
+
+    public boolean isControlConnected() { return controlConnected; }
 
     private void parseSseStream(BufferedReader reader) throws Exception {
         String currentEvent = null;

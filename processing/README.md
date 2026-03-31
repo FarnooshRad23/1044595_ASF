@@ -98,7 +98,10 @@ When the buffer drains, it returns: the double[128] for FFT, and the two timesta
 5. EventPersistenceService — database writes. Test: inject an earthquake via simulator admin API, verify row appears in PostgreSQL.
 6. ControlStreamService — SSE listener + shutdown. Test: trigger POST /api/admin/shutdown, verify the replica process dies and Docker restarts it.
 
-Then add the API layer (EventController, HealthController, DashboardPushService) last
+Then add the API layer (EventController, HealthController, DashboardPushService) last:
+
+curl http://localhost:8082/api/sensors | jq
+curl http://localhost:8082/health | jq
 
 ---
 # ShoutDown demo
