@@ -22,21 +22,27 @@ public class BrokerClientService {
 
     private static final Logger log = LoggerFactory.getLogger(BrokerClientService.class);
 
+HEAD
     private volatile boolean brokerConnected = false;
     private volatile boolean connecting = false;
 
     private static final double SAMPLING_RATE_HZ = 20.0;
 
+
+    private final ClassificationService classificationService;
+    private final FftAnalysisService fftAnalysisService;
+old-private-repo/processing-classification
     private final SlidingWindowService slidingWindowService;
     private final SensorCacheService sensorCacheService;
     private final FftAnalysisService fftAnalysisService;
     private final ClassificationService classificationService;
     private final EventPersistenceService eventPersistenceService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private final EventPersistenceService persistenceService;
     @Value("${broker.url}")
     private String brokerUrl;
 
+HEAD
     public BrokerClientService(SlidingWindowService slidingWindowService,
                                 SensorCacheService sensorCacheService,
                                 FftAnalysisService fftAnalysisService,
@@ -47,6 +53,18 @@ public class BrokerClientService {
         this.fftAnalysisService = fftAnalysisService;
         this.classificationService = classificationService;
         this.eventPersistenceService = eventPersistenceService;
+
+    public BrokerClientService(ClassificationService classificationService,
+                               FftAnalysisService fftAnalysisService,
+                               SlidingWindowService slidingWindowService,
+                               SensorCacheService sensorCacheService, 
+                               EventPersistenceService persistenceService) {
+        this.classificationService = classificationService;
+        this.fftAnalysisService = fftAnalysisService;
+        this.slidingWindowService = slidingWindowService;
+        this.sensorCacheService = sensorCacheService;
+        this.persistenceService=persistenceService;
+old-private-repo/processing-classification
     }
 
     @PostConstruct
@@ -57,10 +75,48 @@ public class BrokerClientService {
                     doConnect();
                 }
                 try {
+HEAD
                     Thread.sleep(5_000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     return;
+
+                    BrokerMessage msg = objectMapper.readValue(
+                            message.getPayload(), BrokerMessage.class);
+
+                    slidingWindowService.addSample(msg.sensorId(), msg.value(), msg.timestamp())
+                            .ifPresent(result -> {
+                                SensorSummary sensor = sensorCacheService.get(result.sensorId())
+                                        .orElse(null);
+
+                                String sensorName = sensor != null ? sensor.name() : "unknown";
+                                double samplingRateHz = sensor != null ? sensor.samplingRateHz() : 100.0;
+
+                                log.info("Window full for {} [{}] — windowStart={} windowEnd={}",
+                                        result.sensorId(), sensorName,
+                                        result.windowStart(), result.windowEnd());
+
+                                FftAnalysisService.FftResult fftResult =
+                                        fftAnalysisService.analyze(result.samples(), samplingRateHz);
+
+                                String classification =
+                                        classificationService.classify(result.sensorId(), fftResult);
+
+                                if (classification == null) return;
+
+                                log.info("Event type:{} (freq={} Hz, magnitude={})",
+                                       
+                                        classification,
+                                        fftResult.dominantFrequencyHz(),
+                                        fftResult.magnitude());
+                            persistenceService.save(result.sensorId(), sensor, classification,  fftResult.dominantFrequencyHz(),   fftResult.magnitude(),
+                             result.windowStart(), result.windowEnd());
+                                       
+                            });
+                           
+                } catch (Exception e) {
+                    log.warn("Failed to process broker message: {}", e.getMessage());
+old-private-repo/processing-classification
                 }
             }
         }, "broker-ws-manager");
