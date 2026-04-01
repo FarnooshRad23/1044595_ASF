@@ -1,0 +1,22 @@
+WebSocket thread-safety bug
+
+The broker has 12 sensors, each with its own WebSocket connection running on its own thread. When measurements arrive concurrently from multiple sensors, multiple threads simultaneously try to call session.sendMessage() on the same
+   replica session. WebSocket sessions are not thread-safe — if thread A is mid-send (TEXT_PARTIAL_WRITING), thread B calling sendMessage() on the same session throws this error.
+
+  In short: concurrent broadcasts to the same replica session from 12 simultaneous sensor threads = race condition.
+
+  The fix is to synchronize sends per session — typically synchronized(session) around the sendMessage() call in the broadcast loop in BrokerStreamHandler. This ensures only one thread writes to a given replica session at a time.
+
+
+With 12 sensors each on their own thread, multiple threads call broadcast() simultaneously. All threads iterate the same set of replica sessions and call session.sendMessage() on the same WebSocketSession objects concurrently.
+ WebSocketSession is not thread-safe for concurrent sends
+
+ -----
+
+In broadcast(), wrap session.sendMessage() in a synchronized(session) block.
+
+ Why synchronized(session)?
+ Each WebSocketSession object is a natural per-session lock. Synchronizing on it means two threads broadcasting to the same session will queue up, but threads broadcasting to different sessions remain fully parallel — no global
+ bottleneck.
+
+ Also move new TextMessage(json) outside the loop: the same immutable object can be reused for all sessions.

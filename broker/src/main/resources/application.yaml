@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: broker
+
+server:
+  port: 8081
+
+simulator:
+  base-url: ${SIMULATOR_BASE_URL:http://localhost:8080}

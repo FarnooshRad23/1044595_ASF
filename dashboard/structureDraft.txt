@@ -1,0 +1,19 @@
+(single page approach)
+
+src/
+├── main.jsx
+├── App.jsx                  ← top-level layout + routing
+├── api/
+│   └── client.js            ← axios instance, base URL config
+├── hooks/
+│   ├── useEvents.js         ← fetches GET /api/events with filters
+│   ├── useRealtimeFeed.js   ← WebSocket connection for live events
+│   └── useSensors.js        ← fetches GET /api/sensors
+├── components/
+│   ├── RealtimeFeed.jsx     ← live event cards, auto-scroll
+│   ├── EventTable.jsx       ← historical table with pagination
+│   ├── EventFilters.jsx     ← dropdowns for sensor, type, date range
+│   ├── SensorList.jsx       ← sensor overview panel
+│   └── SystemHealth.jsx     ← replica status indicators
+└── pages/
+    └── Dashboard.jsx        ← composes all components into one page

@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: processing
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aegis} #da cambiare
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:biar} #era postgres
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+server:
+  port: 8082
+
+simulator:
+  url: ${SIMULATOR_URL:http://localhost:8080}
+
+broker:
+  url: ${BROKER_URL:ws://localhost:8081}
