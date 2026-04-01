@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 // src/components/RealtimeFeed.tsx
+=======
+>>>>>>> old-private-repo/frontendtobackend
 import { useRealtimeFeed } from '../hooks/useRealtimeFeed';
 
 export default function RealtimeFeed() {

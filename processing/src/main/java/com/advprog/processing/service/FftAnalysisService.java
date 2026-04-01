@@ -1,14 +1,20 @@
 package com.advprog.processing.service;
 
+<<<<<<< HEAD
 HEAD
 
 import org.apache.commons.math3.complex.Complex;
 >>>>>>> old-private-repo/processing-classification
+=======
+>>>>>>> old-private-repo/frontendtobackend
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
 import org.springframework.stereotype.Service;
+<<<<<<< HEAD
 HEAD
+=======
+>>>>>>> old-private-repo/frontendtobackend
 
 @Service
 public class FftAnalysisService {
@@ -39,6 +45,7 @@ public class FftAnalysisService {
         return new FftResult(dominantFreqHz, bestMag);
     }
 }
+<<<<<<< HEAD
 
 @Service
 public class FftAnalysisService {
@@ -70,3 +77,5 @@ public class FftAnalysisService {
     public record FftResult(double dominantFrequencyHz, double magnitude) {}
 }
 old-private-repo/processing-classification
+=======
+>>>>>>> old-private-repo/frontendtobackend

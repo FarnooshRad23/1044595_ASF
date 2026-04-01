@@ -30,7 +30,11 @@ public class HealthController {
         this.replicaId = replicaId;
     }
 
+<<<<<<< HEAD
     @GetMapping("/api/health")
+=======
+    @GetMapping("/health")
+>>>>>>> old-private-repo/frontendtobackend
     public HealthResponse health() {
         boolean broker = brokerClientService.isBrokerConnected();
         boolean control = controlStreamService.isControlConnected();

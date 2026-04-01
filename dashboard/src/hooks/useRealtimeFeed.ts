@@ -8,7 +8,12 @@ export function useRealtimeFeed() {
 
   useEffect(() => {
     // Note: You may need to adjust this URL to match the exact WebSocket route your Gateway uses
+<<<<<<< HEAD
     const ws = new WebSocket('ws://localhost:8080/ws/events'); 
+=======
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const ws = new WebSocket(`${protocol}//${window.location.host}/api/events/ws`);
+>>>>>>> old-private-repo/frontendtobackend
 
     ws.onopen = () => {
       console.log('Connected to Aegis live event stream');

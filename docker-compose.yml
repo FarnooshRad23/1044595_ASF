@@ -4,24 +4,39 @@ services:
     ports:
       - "8080:8080"
     environment:
+<<<<<<< HEAD
       SAMPLING_RATE_HZ: "20"
       AUTO_SHUTDOWN_ENABLED: "true"
       AUTO_SHUTDOWN_MIN_SECONDS: "120"
       AUTO_SHUTDOWN_MAX_SECONDS: "180"
+=======
+      AUTO_SHUTDOWN_ENABLED: "false"
+>>>>>>> old-private-repo/frontendtobackend
 
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: aegis
+<<<<<<< HEAD
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+=======
+      POSTGRES_USER: aegis
+      POSTGRES_PASSWORD: aegis
+>>>>>>> old-private-repo/frontendtobackend
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
+<<<<<<< HEAD
       - "5432:5432" # Changed from 5432:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d aegis"]
+=======
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis -d aegis"]
+>>>>>>> old-private-repo/frontendtobackend
       interval: 5s
       timeout: 3s
       retries: 10
@@ -34,6 +49,7 @@ services:
       SIMULATOR_BASE_URL: http://simulator:8080
     depends_on:
       - simulator
+<<<<<<< HEAD
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:8081/ 2>&1; res=$?; [ $res -eq 0 ] || [ $res -eq 8 ]"]
       interval: 10s
@@ -44,48 +60,83 @@ services:
   processing-1:
     build: ./processing
     restart: on-failure
+=======
+
+  processing-1:
+    build: ./processing
+>>>>>>> old-private-repo/frontendtobackend
     environment:
       SIMULATOR_URL: http://simulator:8080
       BROKER_URL: ws://broker:8081
       REPLICA_ID: replica-1
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aegis
+<<<<<<< HEAD
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
       broker:
         condition: service_healthy
+=======
+      SPRING_DATASOURCE_USERNAME: aegis
+      SPRING_DATASOURCE_PASSWORD: aegis
+    depends_on:
+      broker:
+        condition: service_started
+>>>>>>> old-private-repo/frontendtobackend
       postgres:
         condition: service_healthy
 
   processing-2:
     build: ./processing
+<<<<<<< HEAD
     restart: on-failure
+=======
+>>>>>>> old-private-repo/frontendtobackend
     environment:
       SIMULATOR_URL: http://simulator:8080
       BROKER_URL: ws://broker:8081
       REPLICA_ID: replica-2
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aegis
+<<<<<<< HEAD
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
       broker:
         condition: service_healthy
+=======
+      SPRING_DATASOURCE_USERNAME: aegis
+      SPRING_DATASOURCE_PASSWORD: aegis
+    depends_on:
+      broker:
+        condition: service_started
+>>>>>>> old-private-repo/frontendtobackend
       postgres:
         condition: service_healthy
 
   processing-3:
     build: ./processing
+<<<<<<< HEAD
     restart: on-failure
+=======
+>>>>>>> old-private-repo/frontendtobackend
     environment:
       SIMULATOR_URL: http://simulator:8080
       BROKER_URL: ws://broker:8081
       REPLICA_ID: replica-3
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aegis
+<<<<<<< HEAD
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
       broker:
         condition: service_healthy
+=======
+      SPRING_DATASOURCE_USERNAME: aegis
+      SPRING_DATASOURCE_PASSWORD: aegis
+    depends_on:
+      broker:
+        condition: service_started
+>>>>>>> old-private-repo/frontendtobackend
       postgres:
         condition: service_healthy
 

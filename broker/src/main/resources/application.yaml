@@ -6,4 +6,8 @@ server:
   port: 8081
 
 simulator:
+<<<<<<< HEAD
   base-url: ${SIMULATOR_BASE_URL:http://simulator:8080}
+=======
+  base-url: ${SIMULATOR_BASE_URL:http://localhost:8080}
+>>>>>>> old-private-repo/frontendtobackend

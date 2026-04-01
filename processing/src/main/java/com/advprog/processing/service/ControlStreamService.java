@@ -28,7 +28,10 @@ public class ControlStreamService {
     private final RestClient restClient;
     private final Consumer<Integer> exitHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
+<<<<<<< HEAD
     private final String simulatorUrl;
+=======
+>>>>>>> old-private-repo/frontendtobackend
 
     private volatile boolean controlConnected = false;
 
@@ -44,7 +47,10 @@ public class ControlStreamService {
                          String simulatorUrl,
                          Consumer<Integer> exitHandler) {
         this.restClient = builder.baseUrl(simulatorUrl).build();
+<<<<<<< HEAD
         this.simulatorUrl = simulatorUrl;
+=======
+>>>>>>> old-private-repo/frontendtobackend
         this.exitHandler = exitHandler;
     }
 
@@ -80,7 +86,10 @@ public class ControlStreamService {
      */
     void listenOnce() throws Exception {
         controlConnected = true;
+<<<<<<< HEAD
         log.info("ControlStreamService: connecting to SSE at {}/api/control", simulatorUrl);
+=======
+>>>>>>> old-private-repo/frontendtobackend
         try {
             // exchange() gives direct InputStream access needed for line-by-line SSE parsing.
             // Checked exceptions from parseSseStream are wrapped and re-thrown after the call.
@@ -113,12 +122,17 @@ public class ControlStreamService {
                 // Record the event type for the next data line.
                 currentEvent = line.substring("event:".length()).trim();
             } else if (line.startsWith("data:")) {
+<<<<<<< HEAD
                 String json = line.substring("data:".length()).trim();
                 if ("control-open".equals(currentEvent)) {
                     log.info("ControlStreamService: SSE stream connected — {}", json);
                 } else if ("heartbeat".equals(currentEvent)) {
                     log.debug("ControlStreamService: heartbeat — {}", json);
                 } else if ("command".equals(currentEvent)) {
+=======
+                if ("command".equals(currentEvent)) {
+                    String json = line.substring("data:".length()).trim();
+>>>>>>> old-private-repo/frontendtobackend
                     JsonNode node = objectMapper.readTree(json);
                     JsonNode commandNode = node.get("command");
                     if (commandNode != null && "SHUTDOWN".equals(commandNode.asText())) {

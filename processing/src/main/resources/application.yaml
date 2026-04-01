@@ -2,9 +2,15 @@ spring:
   application:
     name: processing
   datasource:
+<<<<<<< HEAD
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/aegis}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+=======
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aegis} #da cambiare
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:biar} #era postgres
+>>>>>>> old-private-repo/frontendtobackend
   sql:
     init:
       mode: always
@@ -16,7 +22,14 @@ server:
   port: 8082
 
 simulator:
+<<<<<<< HEAD
   url: ${SIMULATOR_URL:http://simulator:8080}
 
 broker:
   url: ${BROKER_URL:ws://broker:8081}
+=======
+  url: ${SIMULATOR_URL:http://localhost:8080}
+
+broker:
+  url: ${BROKER_URL:ws://localhost:8081}
+>>>>>>> old-private-repo/frontendtobackend
